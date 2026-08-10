@@ -1,11 +1,11 @@
-"""Desktop 键鼠控制 MCP Server（v0.2 · NEKO 风格坐标抽象升级版）
+"""Desktop 键鼠控制 MCP Server（v0.2 · 坐标抽象升级版）
 
 把 default（QwenPaw）的视觉能力（smart-vision）与真实系统级键鼠操作打通，
-提供 Neko AI / Computer Agent 风格的"看屏 → 思考 → 真实操控"闭环。
+提供 Computer Agent 风格的"看屏 → 思考 → 真实操控"闭环。
 
 底层：pyautogui（真实系统级输入注入，非浏览器 CDP 模拟）。
 
-v0.2 升级（2026-08-05，借鉴 Project-N-E-K-O/N.E.K.O brain/computer_use.py）：
+v0.2 升级（2026-08-05，借鉴业界 Computer-Use Agent 设计）：
 1. Windows DPI 感知：高分屏（125%/150% 缩放）下 pyautogui 坐标不再错位
 2. 坐标归一化抽象层：模型可输出 [0,999] 整数 或 [0,1] 浮点（normalized=True），
    由本层投影到真实物理像素 —— 视觉模型不用知道屏幕分辨率
@@ -54,7 +54,7 @@ import pyautogui
 pyautogui.PAUSE = 0.12
 pyautogui.FAILSAFE = True
 
-# ── Windows DPI 感知（高分屏关键，借鉴 NEKO computer_use.py 开头）──
+# ── Windows DPI 感知（高分屏关键）──
 # pyautogui 返回的是物理像素；若进程不声明 DPI awareness，Windows 会
 # 虚拟化坐标导致 125%/150% 缩放下点击错位。必须在导入 pyautogui 后立即设置。
 if sys.platform == "win32":
@@ -77,7 +77,7 @@ SCREENSHOT_DIR.mkdir(exist_ok=True)
 # 全局串行锁：MCP 调用之间互斥，防止多 agent 同时抢键鼠
 _ACTION_LOCK = threading.Lock()
 
-# ── 坐标抽象层（借鉴 NEKO _ScaledPyAutoGUI）──────────────────────────
+# ── 坐标抽象层 ───────────────────────────
 
 _COORD_MAX = 999          # 模型坐标系最大值（视觉模型通用习惯）
 _FAILSAFE_EDGE_PX = 4     # 边缘内缩像素：避开 Windows 热角 / FAILSAFE 区
@@ -239,10 +239,10 @@ def screen_capture(
       include_cursor: 是否在图上标记鼠标指针位置（默认 True；红圈中心=指针尖端）
       max_width: 输出图最大宽度，默认 1440。更小=更省 token 但更糊；更大=更清晰。
                  桌面图标名称标签这种小字，1440 宽时基本可辨认。
-      max_height: 输出图最大高度，默认 0=不限制。设 720（NEKO 口径）可显著降低
+      max_height: 输出图最大高度，默认 0=不限制。设 720 可显著降低
                   视觉 token 数，截图后模型响应更快；清晰度要求高时不设。
       image_format: 输出格式。"jpeg"（默认，体积小 3~4 倍、视觉编码快）| "png"（无损）。
-      quality: jpeg 质量 1~100，默认 80（NEKO 同款；越低越小越快）。
+      quality: jpeg 质量 1~100，默认 80（越低越小越快）。
       save_path: 自定义保存路径（可选，默认存 shots/ 目录）
 
     返回 JSON：{path, width, height, scale, format, cursor}
@@ -274,7 +274,7 @@ def screen_capture(
                 img = pyautogui.screenshot()
 
         img, scale = _resize_for_llm(img, max_width)
-        # NEKO 口径：可再限高（比如 720）。长宽比不变，进一步减 token
+        # 可再限高（比如 720）。长宽比不变，进一步减 token
         if max_height and max_height > 0 and img.height > max_height:
             r = max_height / img.height
             img = img.resize((max(1, int(img.width * r)), max_height), Image_LANCZOS)
@@ -458,7 +458,7 @@ def press_hotkey(keys: list) -> str:
     return json.dumps({"hotkey": keys})
 
 
-# ---------------- OCR 语义操作（NEKO cua/grounding.py 思路：模型不用算坐标） ----------------
+# ---------------- OCR 语义操作（CUA Grounding 思路：模型不用算坐标） ----------------
 
 _OCR_READER = None
 
