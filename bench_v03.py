@@ -24,7 +24,7 @@ async def main() -> None:
             r1 = await call(s, "screen_capture", {"region": "full", "image_format": "png"})
             # 新默认 = jpeg 1440/80
             r2 = await call(s, "screen_capture", {"region": "full"})
-            # 极致 = jpeg 720 高（NEKO 口径）
+            # 极致 = jpeg 720 高
             r3 = await call(s, "screen_capture", {"region": "full", "max_height": 720})
             for name, r in [("PNG-1440(旧)", r1), ("JPEG-1440/q80(新默认)", r2), ("JPEG-720p(极速)", r3)]:
                 size_kb = os.path.getsize(r["path"]) // 1024
