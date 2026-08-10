@@ -1,0 +1,9 @@
+# 通用排除
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+
+# 截屏输出（可能含屏幕隐私）
+shots/
